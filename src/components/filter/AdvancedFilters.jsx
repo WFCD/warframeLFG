@@ -1,45 +1,62 @@
-import {Component} from 'react';
+import React, { Component } from 'react';
 
-import {MissionQuestionSelect} from '../select';
+import PropTypes from 'prop-types'; // eslint-disable-line no-unused-vars
+
+import MissionQuestionSelect from '../select/MissionQuestionSelect';
 import styles from './AdvancedFilters.scss';
 
-class AdvancedFilters extends Component{
-  constructor(props) {    /* Note props is passed into the constructor in order to be used */
+class AdvancedFilters extends Component {
+  static propTypes = {
+    selectedMission: PropTypes.object,
+    onChangeCallback: PropTypes.func,
+  };
+
+  static defaultProps = {
+    selectedMission: () => {},
+    onChangeCallback: () => {},
+  };
+
+  constructor(props) { /* Note props is passed into the constructor in order to be used */
     super(props);
     this.state = {
-      appData: props.appData,
       selectedMission: null,
-      onChangeCallback: props.onChangeCallback
+      onChangeCallback: props.onChangeCallback,
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
     this.setState({
       selectedMission: nextProps.selectedMission,
-      onChangeCallback: nextProps.onChangeCallback
+      onChangeCallback: nextProps.onChangeCallback,
     });
   }
 
-  handleOnChange(key, value){
-    this.state.onChangeCallback(key, value);
+  handleOnChange(key, value) {
+    const { onChangeCallback } = this.state;
+    onChangeCallback(key, value);
   }
 
   renderMissionDetail() {
-    if (!this.state.selectedMission) {
+    const { selectedMission, validation } = this.state;
+    if (!selectedMission) {
       return null;
     }
-    //Reverse for non-alphabetic order..
-    let keys = Object.keys(this.state.selectedMission).reverse();
+    // Reverse for non-alphabetic order..
+    const keys = Object.keys(selectedMission).reverse();
     return keys.map((key) => {
-      //handle the 'what' key separately, because it's dependent on the 'type' question
-      if (this.state.selectedMission[key] instanceof Array && key !== 'what') {
-        return <MissionQuestionSelect
-          onChange={this.handleOnChange.bind(this, key)}
-          key={key + this.state.selectedMission['name']}
-          keyName={key}
-          errorText={!this.state.validation || this.state.validation[key] ? '' : 'This field is required'}
-          valueList={this.state.selectedMission[key]}/>
+      // handle the 'what' key separately, because it's dependent on the 'type' question
+      if (selectedMission[key] instanceof Array && key !== 'what') {
+        return (
+          <MissionQuestionSelect
+            onChange={this.handleOnChange.bind(this, key)}
+            key={key + selectedMission.name}
+            keyName={key}
+            errorText={!validation || validation[key] ? '' : 'This field is required'}
+            valueList={selectedMission[key]}
+          />
+        );
       }
+      return false;
     });
   }
 

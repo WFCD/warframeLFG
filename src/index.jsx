@@ -1,16 +1,29 @@
-import 'core-js/fn/object/assign';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './components/Main';
-import { LandingView } from './components/view';
-import { Router, Route, browserHistory, IndexRoute } from 'react-router';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+} from 'react-router-dom';
+import Main from './components/Main';
+import LandingView from './components/view/LandingView';
 
+const App = () => (
+  <Main>
+    <LandingView />
+  </Main>
+);
+
+const Init = () => (
+  <Router>
+    <Switch>
+      <Route path="/" component={App} />
+    </Switch>
+  </Router>
+);
 
 // Render the main component into the dom
 ReactDOM.render(
-<Router history={browserHistory}>
-  <Route path="/" component={App}>
-    <IndexRoute component={LandingView}/>
-  </Route>
-</Router>,
-document.getElementById('app'));
+  <Init />,
+  document.getElementById('app'),
+);

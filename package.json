@@ -22,6 +22,7 @@
   "devDependencies": {
     "@babel/core": "^7.13.8",
     "@babel/eslint-parser": "^7.13.8",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.13.8",
     "@babel/preset-react": "^7.12.13",
@@ -40,8 +41,11 @@
     "chai": "^3.2.0",
     "copyfiles": "^0.2.1",
     "eslint": "^7.21.0",
+    "eslint-config-airbnb": "^18.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^1.7.0",
     "fibers": "^5.0.0",
     "file-loader": "^0.8.4",
     "gh-pages": "^3.1.0",
@@ -71,14 +75,16 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.11.3",
-    "core-js": "^2.6.12",
+    "core-js": "^3.9.0",
     "json-loader": "^0.5.4",
     "normalize.css": "^3.0.3",
+    "prop-types": "^15.7.2",
     "re-base": "^1.5.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-motion": "^0.5.2",
     "react-router": "^5.2.0",
+    "react-router-dom": "^5.2.0",
     "underscore": "^1.12.0"
   },
   "contributors": [
@@ -92,12 +98,16 @@
         {
           "modules": "auto",
           "useBuiltIns": "usage",
-          "corejs": 2
+          "corejs": 3
         }
       ]
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties"
     ]
   },
   "eslintConfig": {
+    "extends": "airbnb",
     "parser": "@babel/eslint-parser",
     "plugins": [
       "react"
@@ -109,7 +119,9 @@
         "jsx": true
       },
       "babelOptions": {
-        "plugins": [],
+        "plugins": [
+          "@babel/plugin-proposal-class-properties"
+        ],
         "presets": [
           "@babel/preset-react"
         ]
@@ -143,7 +155,14 @@
       "no-unreachable": 1,
       "no-alert": 0,
       "react/jsx-uses-react": 1,
-      "react/jsx-uses-vars": 1
+      "react/jsx-uses-vars": 1,
+      "import/no-unresolved": 1,
+      "react/no-array-index-key": 0,
+      "react/static-property-placement": 0,
+      "no-param-reassign": 0,
+      "react/jsx-no-bind": 0,
+      "react/forbid-prop-types": 0,
+      "react/no-unused-prop-types": 0
     }
   },
   "license": "MIT"

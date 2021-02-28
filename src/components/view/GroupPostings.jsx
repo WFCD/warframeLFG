@@ -1,105 +1,113 @@
-import {Component} from 'react';
-import {List,Divider} from '@material-ui/core';
+import React, { Component } from 'react';
+import { List, Divider } from '@material-ui/core';
 import Rebase from 're-base';
 import _ from 'underscore';
 
-import {PostFormModal} from '../modal';
-import {GroupPostingsToolbar} from './';
-import {GroupPost} from '../field';
+import PropTypes from 'prop-types'; // eslint-disable-line no-unused-vars
+import PostFormModal from '../modal/PostFormModal';
+import GroupPostingsToolbar from './GroupPostingsToolbar';
+import GroupPost from '../field/GroupPost';
 
 import styles from './GroupPostings.scss';
 
 const base = Rebase.createClass(process.env.FIREBASE_URL);
 
-class GroupPostings extends Component{
+class GroupPostings extends Component {
+  static propTypes = {
+    appData: PropTypes.object,
+  };
+
+  static defaultProps = {
+    appData: {},
+  };
+
   constructor(props) {
     super(props);
     this.state = {
       appData: props.appData,
       postFormOpen: false,
       posts: [],
-      filter: {mission: '1', platform: '1', region: '1', advanced: {}}
+      filter: {
+        mission: '1', platform: '1', region: '1', advanced: {},
+      },
     };
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.ref = base.syncState('postings', {
       context: this,
       state: 'posts',
       asArray: true,
       queries: {
         orderByChild: 'createdOn',
-        startAt: (new Date().getTime() - (3600000))
-      }
+        startAt: (new Date().getTime() - (3600000)),
+      },
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
     this.setState({
-      appData : nextProps.appData
+      appData: nextProps.appData,
     });
   }
 
-  handleCreate(){
-    this.setState({postFormOpen: true});
+  handleCreate() {
+    this.setState({ postFormOpen: true });
   }
 
-  handleClose(){
-    this.setState({postFormOpen: false});
-  }
-
-  renderPosts() {
-    const filter = this.state.filter;
-    const posts = this.state.posts;
-    let filteredPosts = _.filter(posts, (post) => {
-      return (filter.platform === '1' || post.platform === filter.platform) &&
-      (filter.region === '1' || post.region === filter.region) &&
-      (filter.mission === '1' || post.mission.name === filter.mission.name);
-    });
-
-    filteredPosts = this.filterByAdvanced(filteredPosts);
-
-    var postMap = filteredPosts.map((post, index) => {
-      return <GroupPost post={post} key={index} appData={this.state.appData}/>
-    });
-    return postMap.length ? postMap.reverse() : <div className={styles.noResults} style={{marginTop: '3em'}}>Sorry! There are no results that meet this criteria in the past hour.</div>
-  }
-
-  filterByAdvanced(posts){
-    const filter = this.state.filter.advanced;
-    let filteredPosts = posts;
-    let keys = Object.keys(filter);
-    if (keys.length) {
-      filteredPosts = _.filter(filteredPosts, (post) => {
-        return _.reduce(keys, (memo, key) => {
-          return memo && filter[key] === post.mission[key];
-        }, true);
-      });
-    }
-    return filteredPosts;
-
+  handleClose() {
+    this.setState({ postFormOpen: false });
   }
 
   handleFilterChange(filter) {
-    this.setState({filter});
+    this.setState({ filter });
+  }
+
+  filterByAdvanced(posts) {
+    const { filter: { advanced } } = this.state;
+    const filter = advanced;
+    let filteredPosts = posts;
+    const keys = Object.keys(filter);
+    if (keys.length) {
+      filteredPosts = _.filter(filteredPosts,
+        (post) => _.reduce(keys, (memo, key) => memo && filter[key] === post.mission[key], true));
+    }
+    return filteredPosts;
+  }
+
+  renderPosts() {
+    const { filter, posts, appData } = this.state;
+    let filteredPosts = _.filter(posts, (post) => (filter.platform === '1' || post.platform === filter.platform)
+      && (filter.region === '1' || post.region === filter.region)
+      && (filter.mission === '1' || post.mission.name === filter.mission.name));
+
+    filteredPosts = this.filterByAdvanced(filteredPosts);
+
+    const postMap = filteredPosts
+      .map((post, index) => (
+        <GroupPost post={post} key={index} appData={appData} />
+      ));
+    return postMap.length ? postMap.reverse() : <div className={styles.noResults} style={{ marginTop: '3em' }}>Sorry! There are no results that meet this criteria in the past hour.</div>;
   }
 
   render() {
+    const { appData, postFormOpen } = this.state;
     return (
-      <div className='group-posting container'>
+      <div className="group-posting container">
         <GroupPostingsToolbar
           onChange={this.handleFilterChange.bind(this)}
-          appData={this.state.appData}
-          onCreatePost={this.handleCreate.bind(this)}/>
-        <Divider/>
+          appData={appData}
+          onCreatePost={this.handleCreate.bind(this)}
+        />
+        <Divider />
         <List>
           {this.renderPosts()}
         </List>
-      <PostFormModal
-          appData={this.state.appData}
-          open={this.state.postFormOpen}
+        <PostFormModal
+          appData={appData}
+          open={postFormOpen}
           handleClose={this.handleClose.bind(this)}
-      />
+        />
       </div>
     );
   }

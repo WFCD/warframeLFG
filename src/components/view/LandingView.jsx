@@ -1,39 +1,40 @@
-'use strict';
-
 import Rebase from 're-base';
-import styles from './LandingView.scss'
-import { Component } from 'react';
-import {Paper, CircularProgress} from '@material-ui/core'
+import React, { Component } from 'react';
+import { Paper, CircularProgress } from '@material-ui/core';
 
-import {GroupPostings} from './';
+import PropTypes from 'prop-types'; // eslint-disable-line no-unused-vars
+import GroupPostings from './GroupPostings';
+
+import styles from './LandingView.scss';
 
 const base = Rebase.createClass(process.env.FIREBASE_URL);
 
 module.exports = class LandingView extends Component {
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
       appData: [],
-      loading: true
-    }
+      loading: true,
+    };
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.ref = base.syncState('/', {
       context: this,
       state: 'appData',
       asArray: false,
-      then(){
-        this.setState({loading: false})
-      }
+      then() {
+        this.setState({ loading: false });
+      },
     });
   }
 
-  componentWillUnmount(){
+  componentWillUnmount() {
     base.removeBinding(this.ref);
   }
 
-  render(){
+  render() {
+    const { appData, loading } = this.state;
     return (
       <div>
         <div className={styles.heroDiv}>
@@ -47,7 +48,13 @@ module.exports = class LandingView extends Component {
         </div>
         <Paper zDepth={1} rounded={false}>
           <div className={styles.content}>
-            {this.state.loading ? <div className={styles.loader}> <CircularProgress size={2} /> </div> : <GroupPostings appData={this.state.appData} />}
+            {loading ? (
+              <div className={styles.loader}>
+                {' '}
+                <CircularProgress size={2} />
+                {' '}
+              </div>
+            ) : <GroupPostings appData={appData} />}
           </div>
         </Paper>
         <div className={styles.footer}>
@@ -57,12 +64,15 @@ module.exports = class LandingView extends Component {
             </div>
           </div>
           <div className={styles.footerHalfColumn}>
-              Digital Extreme Ltd, Warframe and the logo Warframe are registered trademarks.
-              All rights are reserved worldwide. This site has no official link with Digital Extremes Ltd or Warframe.
-              All artwork, screenshots, characters or other recognizable features of the intellectual property relating to these trademarks are likewise the intellectual property of Digital Extreme Ltd.
+            Digital Extreme Ltd, Warframe and the logo Warframe are registered trademarks.
+            All rights are reserved worldwide. This site has no official link
+            with Digital Extremes Ltd or Warframe.
+            All artwork, screenshots, characters or other recognizable features
+            of the intellectual property relating to these trademarks are likewise
+            the intellectual property of Digital Extreme Ltd.
           </div>
         </div>
       </div>
-    )
+    );
   }
-}
+};

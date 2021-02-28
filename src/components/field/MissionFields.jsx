@@ -1,97 +1,124 @@
-import {Component} from 'react';
-import {MissionQuestionSelect, MissionSelect} from '../select';
-import {TextField} from '@material-ui/core';
-import styles from './MissionFields.scss';
+import React, { Component } from 'react';
+import { TextField } from '@material-ui/core';
 import _ from 'underscore';
+import PropTypes from 'prop-types'; // eslint-disable-line no-unused-vars
+import MissionSelect from '../select/MissionSelect';
+import MissionQuestionSelect from '../select/MissionQuestionSelect';
+import styles from './MissionFields.scss';
 
-class MissionFields extends Component{
-  constructor(props) {    /* Note props is passed into the constructor in order to be used */
+module.exports = class MissionFields extends Component {
+  static propTypes = {
+    missions: PropTypes.array,
+    onChange: PropTypes.func,
+    validation: PropTypes.func,
+    appData: PropTypes.object,
+  };
+
+  static defaultProps = {
+    missions: [],
+    onChange: () => {},
+    validation: () => {},
+    appData: {},
+  };
+
+  constructor(props) { /* Note props is passed into the constructor in order to be used */
     super(props);
     this.state = {
-        missions: props.missions,
-        selectedMission: null,
-        missionObject: {},
-        onChange: props.onChange,
-        validation: props.validation,
-        farmType: null,
-        appData: props.appData
+      missions: props.missions,
+      selectedMission: null,
+      missionObject: {},
+      onChange: props.onChange,
+      validation: props.validation,
+      farmType: null,
+      appData: props.appData,
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
     this.setState({
       missions: nextProps.missions,
       appData: nextProps.appData,
-      validation: nextProps.validation
+      validation: nextProps.validation,
     });
   }
 
-  //handle main mission dropdown
-  handleMissionSelect(mission){
+  // handle main mission dropdown
+  handleMissionSelect(mission) {
+    const { onChange } = this.state;
     this.setState({
-      list: this.state.selectedMission = mission
+      selectedMission: mission,
     });
 
-    let missionObject = {};
+    const missionObject = {};
     _.each(_.keys(mission), (key) => {
-      if(key !== 'name') {
+      if (key !== 'name') {
         missionObject[key] = null;
       }
     });
     missionObject.mission = mission.name;
-    this.setState({missionObject});
-    this.state.onChange(missionObject);
+    this.setState({ missionObject });
+    onChange(missionObject);
   }
 
-  //onChange callback/postObj handle for all subquestions
+  // onChange callback/postObj handle for all subquestions
   handleOnChange(key, value) {
-    //temporary hack to prevent long comments
+    // temporary hack to prevent long comments
     if (key === 'comment') {
       value = value.substr(0, 200);
     }
 
-    let newValue = {};
-    //Check if string since we're using this for textfield changes that return an event
-    newValue[key] = typeof value === 'string' ? value : value.currentTarget.value;
-    let missionObject = _.extend(this.state.missionObject, newValue);
+    const { missionObject: stateMissionObject, onChange } = this.state;
 
-    //Special case for 'farming' type
+    const newValue = {};
+    // Check if string since we're using this for textfield changes that return an event
+    newValue[key] = typeof value === 'string' ? value : value.currentTarget.value;
+    const missionObject = _.extend(stateMissionObject, newValue);
+
+    // Special case for 'farming' type
     if (key === 'type' && missionObject.mission === 'Farming') {
-        this.setState({farmType: value});
-        missionObject.what = null;
-        this.setState({missionObject});
+      this.setState({ farmType: value });
+      missionObject.what = null;
+      this.setState({ missionObject });
     }
 
-    this.setState({missionObject});
-    this.state.onChange(missionObject);
+    this.setState({ missionObject });
+    onChange(missionObject);
   }
 
-  //Rendering for subquestions
+  // Rendering for subquestions
   renderMissionDetail() {
-    if (!this.state.selectedMission) {
+    const { selectedMission, validation } = this.state;
+
+    if (!selectedMission) {
       return null;
     }
-    //Reverse for non-alphabetic order..
-    let keys = Object.keys(this.state.selectedMission).reverse();
+    // Reverse for non-alphabetic order..
+    const keys = Object.keys(selectedMission).reverse();
     return keys.map((key) => {
-      //handle the 'what' key separately, because it's dependent on the 'type' question
-      if (this.state.selectedMission[key] instanceof Array && key !== 'what') {
-        return <MissionQuestionSelect
-          onChange={this.handleOnChange.bind(this, key)}
-          key={key + this.state.selectedMission['name']}
-          keyName={key}
-          errorText={!this.state.validation || this.state.validation[key] ? '' : 'This field is required'}
-          valueList={this.state.selectedMission[key]}/>
+      // handle the 'what' key separately, because it's dependent on the 'type' question
+      if (selectedMission[key] instanceof Array && key !== 'what') {
+        return (
+          <MissionQuestionSelect
+            onChange={this.handleOnChange.bind(this, key)}
+            key={key + selectedMission.name}
+            keyName={key}
+            errorText={!validation || validation[key] ? '' : 'This field is required'}
+            valueList={selectedMission[key]}
+          />
+        );
       }
+      return false;
     });
   }
 
-  //Hacky solution to handle farming dropdown..
+  // Hacky solution to handle farming dropdown..
   renderWhatSelect() {
-    if (this.state.selectedMission && this.state.selectedMission.name === 'Farming' && this.state.farmType) {
+    const {
+      selectedMission, farmType, appData, validation,
+    } = this.state;
+    if (selectedMission && selectedMission.name === 'Farming' && farmType) {
       let dataList = [];
-      let appData = this.state.appData;
-      switch(this.state.farmType) {
+      switch (farmType) {
         case 'Affinity':
           dataList = _.keys(appData.affinity);
           break;
@@ -107,46 +134,56 @@ class MissionFields extends Component{
         case 'Void Keys':
           dataList = _.keys(appData.void);
           break;
+        default:
+          break;
       }
-      return <MissionQuestionSelect
-        key={this.state.farmType}
-        onChange={this.handleOnChange.bind(this, 'what')}
-        keyName='what'
-        errorText={!this.state.validation || this.state.validation.what ? '' : 'This field is required'}
-        valueList={dataList}/>
+      return (
+        <MissionQuestionSelect
+          key={farmType}
+          onChange={this.handleOnChange.bind(this, 'what')}
+          keyName="what"
+          errorText={!validation || validation.what ? '' : 'This field is required'}
+          valueList={dataList}
+        />
+      );
     }
+    return (
+      <>
+      </>
+    );
   }
 
   render() {
+    const { missions, validation } = this.state;
     return (
       <div>
-          <div className={styles.row}>
-            <div className={styles.colHalf}>
-                <MissionSelect
-                  missions={this.state.missions}
-                  selectHandler={this.handleMissionSelect.bind(this)}
-                  errorText={!this.state.validation || this.state.validation.mission ? '' : 'This field is required'}
-                />
-            </div>
-            <div className={styles.colHalf}>
-              {this.renderMissionDetail()}
-              {this.renderWhatSelect()}
-            </div>
+        <div className={styles.row}>
+          <div className={styles.colHalf}>
+            <MissionSelect
+              missions={missions}
+              selectHandler={this.handleMissionSelect.bind(this)}
+              errorText={!validation || validation.mission ? '' : 'This field is required'}
+            />
           </div>
-          <div className={styles.row}>
-            <div className={styles.col}>
-              <TextField
-                style={{ fontSize: '1em', width: '100%', overflow: 'hidden', display: 'inline-block'}}
-                floatingLabelStyle={{fontSize: '1.2em'}}
-                floatingLabelText='comment'
-                multiLine={true}
-                onBlur={this.handleOnChange.bind(this, 'comment')}
-              />
-            </div>
+          <div className={styles.colHalf}>
+            {this.renderMissionDetail()}
+            {this.renderWhatSelect()}
           </div>
+        </div>
+        <div className={styles.row}>
+          <div className={styles.col}>
+            <TextField
+              style={{
+                fontSize: '1em', width: '100%', overflow: 'hidden', display: 'inline-block',
+              }}
+              floatingLabelStyle={{ fontSize: '1.2em' }}
+              floatingLabelText="comment"
+              multiLine
+              onBlur={this.handleOnChange.bind(this, 'comment')}
+            />
+          </div>
+        </div>
       </div>
     );
   }
-}
-
-module.exports = MissionFields;
+};

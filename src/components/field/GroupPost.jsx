@@ -1,87 +1,118 @@
-import {Component} from 'react';
-import {Paper,ListItem} from '@material-ui/core';
+import React, { Component } from 'react';
+import { Paper, ListItem } from '@material-ui/core';
+import question from 'url:../../images/question.png'; // eslint-disable-line import/no-unresolved
+import PropTypes from 'prop-types'; // eslint-disable-line no-unused-vars
 import styles from './GroupPost.scss';
-import question from 'url:../../images/question.png';
 
-class GroupPost extends Component{
+module.exports = class GroupPost extends Component {
+  static propTypes = {
+    post: PropTypes.object,
+    appData: PropTypes.object,
+  };
+
+  static defaultProps = {
+    post: {},
+    appData: {},
+  }
+
   constructor(props) {
     super(props);
     this.state = {
       post: props.post,
-      appData: props.appData
+      appData: props.appData,
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
     this.setState({
-      post : nextProps.post,
-      appData: nextProps.appData
+      post: nextProps.post,
+      appData: nextProps.appData,
     });
   }
 
-  getElapsedTime(){
-    var date = new Date(this.state.post.createdOn);
-    var seconds = Math.floor((new Date() - date) / 1000);
+  getElapsedTime() {
+    const { post } = this.state;
+    const date = new Date(post.createdOn);
+    const seconds = Math.floor((new Date() - date) / 1000);
 
-    var interval = Math.floor(seconds / 31536000);
+    let interval = Math.floor(seconds / 31536000);
 
     if (interval > 1) {
-      return interval + ' years';
+      return `${interval} years`;
     }
     interval = Math.floor(seconds / 2592000);
     if (interval > 1) {
-      return interval + ' months';
+      return `${interval} months`;
     }
     interval = Math.floor(seconds / 86400);
     if (interval > 1) {
-      return interval + ' days';
+      return `${interval} days`;
     }
     interval = Math.floor(seconds / 3600);
     if (interval > 1) {
-      return interval + ' hours';
+      return `${interval} hours`;
     }
     interval = Math.floor(seconds / 60);
     if (interval > 1) {
-      return interval + ' minutes';
+      return `${interval} minutes`;
     }
-    return Math.floor(seconds) + ' seconds';
+    return `${Math.floor(seconds)} seconds`;
   }
 
   renderHaveWarframes() {
-    return this.state.post.haveWarframes.map((warframe, index) => {
-      if (this.state.appData.warframes[warframe.name] && this.state.appData.warframes[warframe.name].image) {
-        return <img
+    const { post, appData } = this.state;
+    return post.haveWarframes.map((warframe, index) => {
+      if (appData.warframes[warframe.name] && appData.warframes[warframe.name].image) {
+        return (
+          <img
+            alt={warframe.name}
+            key={`have-${warframe.name}-${index}`}
+            className={styles.haveWarframeImage}
+            src={appData.warframes[warframe.name].image}
+          />
+        );
+      }
+
+      return (
+        <img
+          alt={warframe.name}
           key={`have-${warframe.name}-${index}`}
           className={styles.haveWarframeImage}
-          src={this.state.appData.warframes[warframe.name].image}/>
-      }
-      else {
-        return <img
-          key={`have-${warframe.name}-${index}`}
-          className={styles.haveWarframeImage}
-          src={question}/>
-      }
+          src={question}
+        />
+      );
     }, this);
   }
 
   renderNeedWarframes() {
-    return this.state.post.needWarframes.map((warframe, index) => {
-      if (this.state.appData.warframes[warframe.name] && this.state.appData.warframes[warframe.name].image) {
-        return <img
+    const { post, appData } = this.state;
+
+    return post.needWarframes.map((warframe, index) => {
+      if (appData.warframes[warframe.name] && appData.warframes[warframe.name].image) {
+        return (
+          <img
+            alt={warframe.name}
+            key={`need-${warframe.name}-${index}`}
+            className={styles.needWarframeImage}
+            src={appData.warframes[warframe.name].image}
+          />
+        );
+      }
+
+      return (
+        <img
+          alt={warframe.name}
           key={`need-${warframe.name}-${index}`}
           className={styles.needWarframeImage}
-          src={this.state.appData.warframes[warframe.name].image}/>
-      }
-      else {
-        return <img
-          key={`need-${warframe.name}-${index}`}
-          className={styles.needWarframeImage}
-          src={question}/>
-      }
+          src={question}
+        />
+      );
     }, this);
   }
 
   render() {
+    const { post } = this.state;
+
     return (
       <Paper className={styles.groupPost}>
         <ListItem>
@@ -90,32 +121,33 @@ class GroupPost extends Component{
             <div className={styles.rowWrapper}>
 
               <div className={styles.column}>
-                <div style={{paddingBottom: 20}}>
+                <div style={{ paddingBottom: 20 }}>
                   <span className={styles.title}>
-                    {this.state.post.creator}
+                    {post.creator}
                   </span>
                 </div>
                 <span className={styles.primaryText}>
-                  {`${this.state.post.mission.name} - ${this.state.post.mission.type} ${this.state.post.mission.tier ? this.state.post.mission.tier : ''}
-                  ${this.state.post.mission.what ? ': ' + this.state.post.mission.what : ''}`}
+                  {`${post.mission.name} - ${post.mission.type} ${post.mission.tier ? post.mission.tier : ''}
+                  ${post.mission.what ? `: ${post.mission.what}` : ''}`}
                 </span>
                 <div
-                  style={{paddingBottom: 20}}
-                  className={styles.secondaryText}>
-                  {this.state.post.mission.comment}
+                  style={{ paddingBottom: 20 }}
+                  className={styles.secondaryText}
+                >
+                  {post.mission.comment}
                 </div>
                 <div className={styles.column}>
                   <span className={styles.secondaryText}>
-                    {this.state.post.platform}
+                    {post.platform}
                   </span>
                   <span className={styles.secondaryText}>
-                    {this.state.post.region}
+                    {post.region}
                   </span>
                 </div>
               </div>
 
               <div className={styles.wfWrapper}>
-                <div style={{display: 'inline-block'}}>
+                <div style={{ display: 'inline-block' }}>
                   <div className={styles.wfAll}>
                     <div className={styles.wfHave}>
                       {this.renderHaveWarframes()}
@@ -129,18 +161,15 @@ class GroupPost extends Component{
 
             <div className={styles.metaDataColumn}>
               <span className={styles.secondaryText}>
-                {this.getElapsedTime() + ' ago'}
+                {`${this.getElapsedTime()} ago`}
               </span>
               <span className={styles.secondaryText}>
-                {this.state.post.spotsLeft + ' open spot(s)'}
+                {`${post.spotsLeft} open spot(s)`}
               </span>
             </div>
-
           </div>
         </ListItem>
       </Paper>
     );
   }
-}
-
-module.exports = GroupPost;
+};
