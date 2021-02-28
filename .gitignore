@@ -30,4 +30,10 @@ node_modules
 bower_components/
 
 #build
-dist
+dist/
+
+# Parcel Cache
+.parcel-cache/
+
+# Environment Files
+.env

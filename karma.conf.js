@@ -1,5 +1,3 @@
-var webpackCfg = require('./webpack.config');
-
 module.exports = function(config) {
   config.set({
     basePath: '',
@@ -17,10 +15,6 @@ module.exports = function(config) {
     reporters: [ 'mocha', 'coverage' ],
     preprocessors: {
       'test/loadtests.js': [ 'webpack', 'sourcemap' ]
-    },
-    webpack: webpackCfg,
-    webpackServer: {
-      noInfo: true
     },
     coverageReporter: {
       dir: 'coverage/',
